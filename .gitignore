@@ -1,0 +1,11 @@
+.idea/*
+/server/*.tmp
+/server/.idea/*
+/server/logs
+/server/conf/db.conf
+/server/conf/redis.conf
+/server/conf/mongo.conf
+/server/conf/mail.conf
+/server/swagger/*
+/server/swagger.zip
+/server/server.exe*
