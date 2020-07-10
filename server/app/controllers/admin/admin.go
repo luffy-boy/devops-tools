@@ -352,5 +352,14 @@ func (c *AdminController) Post() {
 // @Failure 500 server error
 // @router /index_data [get]
 func (c *AdminController) IndexData() {
-	c.ResponseToJson(response.Success, nil)
+	var (
+		data service.IndexData
+		err  error
+	)
+
+	if data, err = service.GetIndexData(); err != nil {
+		c.ResponseToJson(response.DbQueryErr, nil)
+		return
+	}
+	c.ResponseToJson(response.Success, data)
 }
