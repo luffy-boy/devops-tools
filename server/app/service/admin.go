@@ -1,8 +1,13 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"github.com/astaxie/beego"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	options2 "go.mongodb.org/mongo-driver/mongo/options"
 	"strconv"
 	"strings"
 	"time"
@@ -113,6 +118,21 @@ type AdminDetail struct {
 	RoleId       int    `json:"role_id"`
 	RouteIds     string `json:"route_ids"`
 	Introduction string `json:"introduction"`
+}
+
+//首页统计数据
+type IndexData struct {
+	UserCount   DataCount `json:"user_count"`
+	AuditTask   DataCount `json:"audit_task"`
+	SuccessTask DataCount `json:"success_task"`
+	FailTask    DataCount `json:"fail_task"`
+}
+
+//总用户数
+type DataCount struct {
+	ActualData []int64  `json:"actual_data"`
+	DateData   []string `json:"date_data"`
+	Total      int64    `json:"total"`
 }
 
 //管理员登录
@@ -404,4 +424,312 @@ func AdminCreateOrUpdate(adminJ *AdminRequest) error {
 	}
 
 	return nil
+}
+
+//设置更新管理员字段
+func setAdminUpdateFields(fields []string, admin *models.Admin) []string {
+	if admin.Password != "" {
+		fields = append(fields, "password")
+	}
+	if admin.RealName != "" {
+		fields = append(fields, "real_name")
+	}
+	if admin.Status >= 0 {
+		fields = append(fields, "status")
+	}
+	if admin.IsDelete >= 0 {
+		fields = append(fields, "is_delete")
+	}
+	if admin.Birthday != 0 {
+		fields = append(fields, "birthday")
+	}
+	if admin.Phone != "" {
+		fields = append(fields, "phone")
+	}
+	if admin.Email != "" {
+		fields = append(fields, "email")
+	}
+	if admin.Sex >= 0 {
+		fields = append(fields, "sex")
+	}
+	if admin.RoleId >= 0 {
+		fields = append(fields, "role_id")
+	}
+	if admin.RouteIds != "" {
+		fields = append(fields, "route_ids")
+	}
+	if admin.Introduction != "" {
+		fields = append(fields, "introduction")
+	}
+	fields = append(fields, "utime")
+	return fields
+}
+
+func GetIndexData() (IndexData, error) {
+
+	timestamp := getNowZeroTime()
+
+	//用户数
+	uerr, userCount := countUser(timestamp)
+	if uerr != nil {
+		return IndexData{}, uerr
+	}
+
+	//待审核任务
+	aerr, auditTask := countAuditTask(timestamp)
+	if aerr != nil {
+		return IndexData{}, aerr
+	}
+
+	//成功任务
+	serr, successTask := countTaskStatus(timestamp, 1)
+	if serr != nil {
+		return IndexData{}, serr
+	}
+
+	//失败任务
+	ferr, failTask := countTaskStatus(timestamp, 3)
+	if ferr != nil {
+		return IndexData{}, ferr
+	}
+
+	data := IndexData{
+		UserCount:   userCount,
+		AuditTask:   auditTask,
+		SuccessTask: successTask,
+		FailTask:    failTask,
+	}
+
+	return data, nil
+}
+
+func countUser(timestamp int64) (error, DataCount) {
+	var (
+		filters    []interface{}
+		actualData []int64
+		dateData   []string
+		total      int64
+		dateKey    map[string]int64
+		ndate      string
+		ntime      int64
+	)
+	//用户总数
+	filters = append(filters, "is_delete", 0)
+	data, err := models.CountUserAndTask(filters, "app_admin")
+	if err != nil {
+		return err, DataCount{}
+	}
+	for _, v := range data {
+		total = v.Dcount
+	}
+
+	//最近七天的数据
+	stime := timestamp - 6*86400
+	list, gerr := models.GroupUserAndTask(stime, "app_admin")
+	if gerr != nil {
+		return gerr, DataCount{}
+	}
+
+	//日期map
+	dateKey = map[string]int64{}
+	for _, v := range list {
+		dateKey[v.Cdate] = v.Dcount
+	}
+
+	for i := 6; i >= 0; i-- {
+		ntime = timestamp - int64(i * 86400)
+		ndate = time.Unix(ntime, 0).Format("01-02")
+
+		dateData = append(dateData, ndate)
+		if _, ok := dateKey[ndate]; ok {
+			actualData = append(actualData, dateKey[ndate])
+		} else {
+			actualData = append(actualData, 0)
+		}
+	}
+
+	res := DataCount{
+		ActualData: actualData,
+		DateData:   dateData,
+		Total:      total,
+	}
+
+	return nil, res
+}
+
+func countAuditTask(timestamp int64) (error, DataCount) {
+	var (
+		filters    []interface{}
+		actualData []int64
+		dateData   []string
+		total      int64
+		dateKey    map[string]int64
+		ndate      string
+		ntime      int64
+	)
+	//待审核任务总数
+	filters = append(filters, "is_audit", 0)
+	filters = append(filters, "is_delete", 0)
+	data, err := models.CountUserAndTask(filters, "app_task")
+	if err != nil {
+		return err, DataCount{}
+	}
+	for _, v := range data {
+		total = v.Dcount
+	}
+
+	//待审核任务最近七天的数据
+	stime := timestamp - 7*86400
+	list, gerr := models.GroupUserAndTask(stime, "app_task")
+	if gerr != nil {
+		return gerr, DataCount{}
+	}
+
+	//日期map
+	dateKey = map[string]int64{}
+	for _, v := range list {
+		dateKey[v.Cdate] = v.Dcount
+	}
+
+	for i := 6; i >= 0; i-- {
+		ntime = timestamp - int64(i * 86400)
+		ndate = time.Unix(ntime, 0).Format("01-02")
+
+		dateData = append(dateData, ndate)
+		if _, ok := dateKey[ndate]; ok {
+			actualData = append(actualData, dateKey[ndate])
+		} else {
+			actualData = append(actualData, 0)
+		}
+	}
+
+	res := DataCount{
+		ActualData: actualData,
+		DateData:   dateData,
+		Total:      total,
+	}
+
+	return nil, res
+}
+
+func countTaskStatus(timestamp int64, status int8) (error, DataCount) {
+	var (
+		filters    interface{}
+		actualData []int64
+		dateData   []string
+		total      int64
+		dateKey    map[string]int64
+		ndate      string
+		ntime      int64
+	)
+	//任务总数
+	filters = bson.D{{"status", status}}
+	data, err := taskStatus(filters, 1)
+	if err != nil {
+		return err, DataCount{}
+	}
+	for _, v := range data {
+		total = v.Dcount
+	}
+
+	//任务最近七天的数据
+	timeString := "1970-01-01T08:00:00Z"
+	t, _ := time.Parse("2006-01-02T15:04:05Z", timeString)
+	match := bson.D{{"$match", bson.D{{"status", status}, {"ctime", bson.D{{"$gte", timestamp - 7*84600}}}}}}
+	project := bson.D{
+		{"$project",
+			bson.D{
+				{"cdate",
+					bson.D{
+						{"$dateToString",
+							bson.D{
+								{"format", "%m-%d"},
+								{"date",
+									bson.D{
+										{"$add",
+											bson.A{t,
+												bson.D{
+													{"$multiply", bson.A{"$ctime", 1000}}}}}}}}}}}}}}
+	group1 := bson.D{{"$group", bson.D{{"_id", bson.D{{"cdate", "$cdate"}}}, {"dcount", bson.D{{"$sum", 1}}}}}}
+	sort := bson.D{{"$sort", bson.D{{"_id.cdate", 1}}}}
+	filters = mongo.Pipeline{match, project, group1, sort}
+	list, gerr := taskStatus(filters, 2)
+	if gerr != nil {
+		return gerr, DataCount{}
+	}
+
+	//日期map
+	dateKey = map[string]int64{}
+	for _, v := range list {
+		dateKey[v.Cdate] = v.Dcount
+	}
+
+	for i := 6; i >= 0; i-- {
+		ntime = timestamp - int64(i * 86400)
+		ndate = time.Unix(ntime, 0).Format("01-02")
+
+		dateData = append(dateData, ndate)
+		if _, ok := dateKey[ndate]; ok {
+			actualData = append(actualData, dateKey[ndate])
+		} else {
+			actualData = append(actualData, 0)
+		}
+	}
+
+	res := DataCount{
+		ActualData: actualData,
+		DateData:   dateData,
+		Total:      total,
+	}
+
+	return nil, res
+}
+
+func getNowZeroTime() int64 {
+	year := time.Now().Format("2006")
+	month := time.Now().Format("01")
+	day := time.Now().Format("02")
+	datetime := year + "-" + month + "-" + day + " 00:00:00"
+	timestamp := common.Strtotime(datetime, 2)
+
+	return timestamp
+}
+
+func taskStatus(filters interface{}, qtype int8) ([]*models.IndexData, error) {
+
+	countData := make([]*models.IndexData, 0)
+
+	if qtype == 1 {
+		//全部查询
+		total, err := util.MgoClient.CountDocuments("log", "task_run_log", filters)
+		if err != nil {
+			return nil, err
+		}
+		countData = []*models.IndexData{{
+			Cdate:  "",
+			Dcount: total,
+		}}
+	} else {
+		//聚合查询
+		cursor, err := util.MgoClient.Aggregate("log", "task_run_log", filters, &options2.AggregateOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		var results []bson.M
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			return nil, err
+		}
+		if err := cursor.Close(context.TODO()); err != nil {
+			return nil, err
+		}
+		for _, result := range results {
+			cid := result["_id"].(primitive.M)
+			cdate := cid["cdate"]
+			dcount := result["dcount"]
+			countData = append(countData, &models.IndexData{Cdate: cdate.(string), Dcount: int64(dcount.(int32))})
+		}
+	}
+
+	return countData, nil
 }

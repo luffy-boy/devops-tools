@@ -85,3 +85,11 @@ func (m *MongoObj) UpdateOne(db, tableName string, filter, document interface{},
 	res, err := collection.UpdateOne(context.Background(), filter, document, opts...)
 	return res, err
 }
+
+//聚合查询
+func (m *MongoObj) Aggregate(db, tableName string, pipeline interface{}, opts ...*options.AggregateOptions)  (*mongo.Cursor, error){
+	collection := m.client.Database(db).Collection(tableName)
+	res, err := collection.Aggregate(context.TODO(), pipeline, opts...)
+	return res, err
+
+}

@@ -28,6 +28,11 @@ type Admin struct {
 	Utime        int    //修改时间
 }
 
+type IndexData struct {
+	Cdate  string
+	Dcount int64
+}
+
 func (c *Admin) TableName() string {
 	return "admin"
 }
@@ -99,4 +104,54 @@ func (self *Admin) Create(data *Admin, fields []string) (num int64, err error) {
 		}
 	}
 	return
+}
+
+//查询用户数量（管理员）及 待审核任务数
+func CountUserAndTask(filters []interface{}, tableName string) ([]*IndexData, error) {
+
+	var countData []*IndexData
+
+	model := o.QueryTable(tableName)
+
+	if len(filters) > 0 {
+		l := len(filters)
+		for k := 0; k < l; k += 2 {
+			model = model.Filter(filters[k].(string), filters[k+1])
+		}
+	}
+
+	total, err := model.Count()
+	if err != nil {
+		return nil, err
+	}
+	countData = []*IndexData{{
+		Cdate:  "",
+		Dcount: total,
+	}}
+
+
+	return countData, nil
+}
+
+//查询用户数量（管理员）及 待审核任务数
+func GroupUserAndTask(stime int64, tableName string) ([]*IndexData, error) {
+
+	var countData []*IndexData
+	var maps []orm.Params
+	if tableName == "app_admin" {
+		o.Raw("select FROM_UNIXTIME(ctime,'%m-%d') as cdate, count(id) as dcount from app_admin where is_delete=0 and ctime >= ? group by cdate order by cdate", stime).Values(&maps)
+	} else if tableName == "app_task" {
+		o.Raw("select FROM_UNIXTIME(ctime,'%m-%d') as cdate, count(id) as dcount from app_task where is_delete=0 and is_audit=0 and ctime >= ? group by cdate order by cdate", stime).Values(&maps)
+	} else {
+		return countData, nil
+	}
+	var dcount, cdate string
+	for _,v := range maps{
+		dcount = v["dcount"].(string)
+		cdate = v["cdate"].(string)
+		Dcount, _ := strconv.ParseInt(dcount, 10, 64)
+		countData = append(countData, &IndexData{Cdate : cdate, Dcount : Dcount})
+	}
+
+	return countData, nil
 }

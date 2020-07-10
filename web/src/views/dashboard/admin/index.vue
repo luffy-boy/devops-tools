@@ -2,48 +2,53 @@
   <div class="dashboard-editor-container">
     <github-corner class="github-corner" />
 
-    <panel-group @handleSetLineChartData="handleSetLineChartData" />
+    <panel-group
+      @handleSetLineChartData="handleSetLineChartData"
+      :user_count="user_count"
+      :audit_task="audit_task"
+      :success_task="success_task"
+      :fail_task="fail_task"
+    />
 
     <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
       <line-chart :chart-data="lineChartData" />
     </el-row>
-
   </div>
 </template>
 
 <script>
-import { getIndexData } from '@/api/admin'
-import GithubCorner from '@/components/GithubCorner'
-import PanelGroup from './components/PanelGroup'
-import LineChart from './components/LineChart'
-import RaddarChart from './components/RaddarChart'
-import PieChart from './components/PieChart'
-import BarChart from './components/BarChart'
-import TransactionTable from './components/TransactionTable'
-import TodoList from './components/TodoList'
-import BoxCard from './components/BoxCard'
+import { getIndexData } from "@/api/admin";
+import GithubCorner from "@/components/GithubCorner";
+import PanelGroup from "./components/PanelGroup";
+import LineChart from "./components/LineChart";
+import RaddarChart from "./components/RaddarChart";
+import PieChart from "./components/PieChart";
+import BarChart from "./components/BarChart";
+import TransactionTable from "./components/TransactionTable";
+import TodoList from "./components/TodoList";
+import BoxCard from "./components/BoxCard";
 
 const lineChartData = {
-  newVisitis: {
+  userCount: {
     actualData: [],
-    dateData : []
+    dateData: []
   },
-  messages: {
+  auditTask: {
     actualData: [],
-    dateData : []
+    dateData: []
   },
-  purchases: {
+  successTask: {
     actualData: [],
-    dateData : []
+    dateData: []
   },
-  shoppings: {
+  failTask: {
     actualData: [],
-    dateData : []
+    dateData: []
   }
-}
+};
 
 export default {
-  name: 'DashboardAdmin',
+  name: "DashboardAdmin",
   components: {
     GithubCorner,
     PanelGroup,
@@ -57,27 +62,49 @@ export default {
   },
   data() {
     return {
-      lineChartData: lineChartData.newVisitis
-    }
+      lineChartData: lineChartData.userCount,
+      user_count: 0,
+      audit_task: 0,
+      success_task: 0,
+      fail_task: 0
+    };
   },
-  created(){
+  created() {
     this.getIndexData();
   },
   methods: {
-    getIndexData(){
-      getIndexData().then(response =>{
+    getIndexData() {
+      getIndexData().then(response => {
         if (response.code != 1) {
-          return
+          return;
         }
-        lineChartData.newVisitis.actualData = [12,23,34,65,23,54,23]
-        lineChartData.newVisitis.dateData = ["01-01","01-02","01-03","01-04","01-05","01-06","01-07"]
-      })
+        //用户总数
+        lineChartData.userCount.actualData = response.data.user_count.actual_data;
+        lineChartData.userCount.dateData = response.data.user_count.date_data;
+        this.user_count = response.data.user_count.total;
+
+        //待审核任务
+        lineChartData.auditTask.actualData = response.data.audit_task.actual_data;
+        lineChartData.auditTask.dateData = response.data.audit_task.date_data;
+        this.audit_task = response.data.audit_task.total;
+
+        //成功任务
+        lineChartData.successTask.actualData = response.data.success_task.actual_data;
+        lineChartData.successTask.dateData = response.data.success_task.date_data;
+        this.success_task = response.data.success_task.total;
+
+        //失败任务
+        lineChartData.failTask.actualData = response.data.fail_task.actual_data;
+        lineChartData.failTask.dateData = response.data.fail_task.date_data;
+        this.fail_task = response.data.fail_task.total;
+
+      });
     },
     handleSetLineChartData(type) {
-      this.lineChartData = lineChartData[type]
+      this.lineChartData = lineChartData[type];
     }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -100,7 +127,7 @@ export default {
   }
 }
 
-@media (max-width:1024px) {
+@media (max-width: 1024px) {
   .chart-wrapper {
     padding: 8px;
   }
