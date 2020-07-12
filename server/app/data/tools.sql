@@ -147,7 +147,7 @@ INSERT INTO `app_routes` VALUES (29, 14, '服务器新增', 'devops/servers/add'
 INSERT INTO `app_routes` VALUES (30, 14, '服务器修改', 'devops/servers/edit', '', 'devops/servers/detail', 0x65646974, '', '', 1, '', ':id', 1, 50, 1, 0, 1594194951, 0);
 INSERT INTO `app_routes` VALUES (31, 17, '定时任新增', 'devops/task/add', '', 'devops/task/detail', 0x6465766F70732F7461736B2F616464, 'taskAdd', '', 1, '', '', 1, 50, 1, 0, 1594195138, 1594195191);
 INSERT INTO `app_routes` VALUES (32, 17, '定时任务修改', 'devops/task/edit', '', 'devops/task/detail', 0x65646974, 'taskEdit', '', 1, '', ':id', 1, 50, 1, 0, 1594195236, 0);
-INSERT INTO `app_routes` VALUES (33, 17, '任务执行日志', 'devops/task/log', '', 'devops/task/log', 0x6C6F67, 'taskLog', '', 0, '', ':id', 1, 50, 1, 0, 1594195289, 0);
+INSERT INTO `app_routes` VALUES (33, 17, '任务执行日志', 'devops/task/log', '', 'devops/task/log', 0x6C6F67, 'taskLog', '', 1, '', ':id', 1, 50, 1, 0, 1594195289, 0);
 INSERT INTO `app_routes` VALUES (34, 17, '任务日志信息', 'devops/task/log_detail', '', 'devops/task/log_detail', 0x6C6F675F64657461696C, 'taskLogDetail', '', 0, '', ':id', 0, 50, 1, 0, 1594195434, 0);
 INSERT INTO `app_routes` VALUES (35, 13, '消息模板', 'devops/notify', '', 'devops/index', 0x6E6F74696679, 'notify', '/devops/notify/list', 0, '', '', 1, 8, 1, 0, 1594195503, 0);
 INSERT INTO `app_routes` VALUES (36, 35, '消息模板', 'devops/notify/list', '', 'devops/notify/list', 0x6C697374, 'notifyList', '', 0, '', '', 1, 50, 1, 0, 1594195561, 0);
