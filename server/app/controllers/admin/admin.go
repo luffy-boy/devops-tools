@@ -218,6 +218,25 @@ func (c *AdminController) Detail() {
 	c.ResponseToJson(response.Success, data)
 }
 
+// @Title 刷新登陆信息
+// @Description
+// @Success 200 {object}  Res {"code":1,"data":null,"msg":"ok"}
+// @Failure 400 no enough input
+// @Failure 500 server error
+// @router /refresh_login [get]
+func (c *AdminController) RefreshLogin() {
+	if c.userId < 1 {
+		c.ResponseToJson(response.UserAccessForbiddenErr, nil)
+		return
+	}
+
+	if err := service.RefreshLogin(c.userId); err != nil {
+		c.ResponseToJson(response.RefreshLoginErr, err.Error())
+		return
+	}
+	c.ResponseToJson(response.Success, nil)
+}
+
 // @Title 创建管理员账号
 // @Description 创建管理员账号
 // @Success 200 {object}  Res {"code":1,"data":null,"msg":"ok"}

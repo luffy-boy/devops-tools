@@ -6,7 +6,7 @@
           <svg-icon icon-class="peoples" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
-          <div class="card-panel-text">вэсц╩╖а©</div>
+          <div class="card-panel-text">Ф─╩Г■╗Ф┬╥И┤▐</div>
           <count-to :start-val="0" :end-val="user_count" :duration="2600" class="card-panel-num" />
         </div>
       </div>
@@ -17,7 +17,7 @@
           <svg-icon icon-class="message" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
-          <div class="card-panel-text">╢ЩиС╨кхннЯ</div>
+          <div class="card-panel-text">Е╬┘Е╝║Ф═╦Д╩╩Е┼║</div>
           <count-to :start-val="0" :end-val="audit_task" :duration="3000" class="card-panel-num" />
         </div>
       </div>
@@ -28,7 +28,7 @@
           <svg-icon icon-class="money" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
-          <div class="card-panel-text">Ёи╧╕хннЯ</div>
+          <div class="card-panel-text">Ф┬░Е┼÷Д╩╩Е┼║</div>
           <count-to :start-val="0" :end-val="success_task" :duration="3200" class="card-panel-num" />
         </div>
       </div>
@@ -39,7 +39,7 @@
           <svg-icon icon-class="shopping" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
-          <div class="card-panel-text">й╖╟эхннЯ</div>
+          <div class="card-panel-text">Е╓╠Х╢╔Д╩╩Е┼║</div>
           <count-to :start-val="0" :end-val="fail_task" :duration="3600" class="card-panel-num" />
         </div>
       </div>

@@ -118,7 +118,7 @@ func checkExtraContent(content string, extra map[string]string) (string, error) 
 	reg := regexp.MustCompile("{{.*?\\.DATA}}")
 	arrContent := reg.FindAllString(content, -1)
 
-	if len(arrContent) >0 {
+	if len(arrContent) > 0 {
 		//校验内容中需替换字段是否为空
 		f := func(c rune) bool {
 			if c == '{' || c == '.' {
@@ -128,7 +128,7 @@ func checkExtraContent(content string, extra map[string]string) (string, error) 
 			}
 		}
 
-		for _,v := range arrContent{
+		for _, v := range arrContent {
 			result := strings.FieldsFunc(v, f)
 			ekey := result[0]
 			_, isExist := extra[ekey]
@@ -137,7 +137,7 @@ func checkExtraContent(content string, extra map[string]string) (string, error) 
 			}
 
 			//替换字符串
-			content = strings.Replace(content, v, extra[ekey], -1 )
+			content = strings.Replace(content, v, extra[ekey], -1)
 		}
 
 	}

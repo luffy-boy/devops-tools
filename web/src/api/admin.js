@@ -30,7 +30,7 @@ export function getInfo() {
   })
 }
 
-export function fetchList(params){
+export function fetchList(params) {
   return request({
     url: 'auth/admin/list',
     method: 'get',
@@ -38,7 +38,7 @@ export function fetchList(params){
   })
 }
 
-export function create(data,method){
+export function create(data,method) {
   return request({
     url: 'auth/admin',
     method: method,
@@ -46,7 +46,7 @@ export function create(data,method){
   })
 }
 
-export function getDetail(params){
+export function getDetail(params) {
   return request({
     url: 'auth/admin/detail',
     method: 'get',
@@ -54,9 +54,16 @@ export function getDetail(params){
   })
 }
 
-export function getIndexData(){
+export function getIndexData() {
   return request({
     url: 'auth/admin/index_data',
+    method: 'get'
+  })
+}
+
+export function refreshLoginInfo() {
+  return request({
+    url: 'auth/admin/refresh_login',
     method: 'get'
   })
 }

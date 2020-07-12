@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <router-link :to="'/auth/route/detail'">
+      <router-link :to="'/auth/route/add'">
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit">
         新增
       </el-button>
@@ -19,7 +19,7 @@
       <el-table-column
         prop="route_name"
         label="路由名称"
-        width="180">
+        width="200">
       </el-table-column>
       <el-table-column
         prop="route"
@@ -56,7 +56,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <router-link :to="'/auth/route/detail/'+row.route_id">
+          <router-link :to="'/auth/route/edit/'+row.route_id">
             <el-button type="primary" size="small" icon="el-icon-edit">
               编辑
             </el-button>

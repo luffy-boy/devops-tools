@@ -33,8 +33,12 @@ router.beforeEach(async(to, from, next) => {
         try {
           // get user info
           await store.dispatch('admin/getInfo')
-
-          next()
+          //实际是请求用户信息后返回，这里是模拟数据，直接从store中取
+          const roles = store.getters.roles;
+          const accessRoutes = await store.dispatch('permission/generateRoutes', roles)
+          router.addRoutes(accessRoutes)
+          router.options.routes = accessRoutes
+          next({ ...to, replace: true })
         } catch (error) {
           // remove token and go to login page to re-login
           await store.dispatch('admin/resetToken')

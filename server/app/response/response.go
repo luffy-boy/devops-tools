@@ -47,6 +47,7 @@ const (
 	UserAccountErr   //201001002   账号不存在或者密码错误
 	RoleHasChild     //201001003   角色拥有下级权限，无法删除
 	RouteHasChildErr //201001004   路由拥有下级配置，无法删除
+	RefreshLoginErr  //201001005   刷新登陆信息失败
 )
 
 //服务器运维

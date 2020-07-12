@@ -65,7 +65,7 @@ func (c *RouteController) Menu() {
 		data *service.Menu
 	)
 
-	if err, data = service.MenuList(c.userId); err != nil {
+	if data, err = service.MenuList(c.userId); err != nil {
 		c.ResponseToJson(response.DbQueryErr, nil, err.Error())
 		return
 	}

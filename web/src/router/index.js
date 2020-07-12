@@ -59,10 +59,27 @@ export const constantRoutes = [
       }
     ]
   },
-  authRouter,
-  devopsRouter,
+  // authRouter,
+  // devopsRouter,
 
   // 404 page must be placed at the end !!!
+  // { path: '*', redirect: '/404', hidden: true }
+]
+
+export const asyncRoutes = [
+  {
+    path: '/',
+    component: Layout,
+    redirect: '/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        component: () => import('@/views/dashboard/index'),
+        name: 'Dashboard',
+        meta: { title: '首页', icon: 'dashboard', affix: true }
+      }
+    ]
+  },
   { path: '*', redirect: '/404', hidden: true }
 ]
 

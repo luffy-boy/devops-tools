@@ -2,7 +2,11 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"github.com/astaxie/beego/validation"
+	"regexp"
 	"strings"
+	"tools/server/app/common"
 	"tools/server/app/models"
 )
 
@@ -50,6 +54,23 @@ var (
 		1: {Id: 1, NotifyName: "邮件"},
 	}
 )
+
+func (tpl *NotifyTplDetail) Valid(v *validation.Validation) {
+	fmt.Println(tpl)
+	if tpl.TplData != "" {
+		reg := regexp.MustCompile("{{.*?\\.DATA}}")
+		arrContent := reg.FindAllString(tpl.TplData, -1)
+		if len(arrContent) > 0 {
+			for _, value := range arrContent {
+				if common.HasChineseChar(value) {
+					v.SetError("tpl_data", "模板信息不能含有中文")
+					return
+				}
+			}
+
+		}
+	}
+}
 
 func NotifyTplList(params *NotifyTplParams) (error, NotifyTplListData) {
 	var (

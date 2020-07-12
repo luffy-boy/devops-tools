@@ -11,7 +11,7 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
-      <router-link :to="'/auth/admin/detail'">
+      <router-link :to="'/auth/admin/add'">
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit">
         新增
       </el-button>
@@ -73,7 +73,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <router-link :to="'/auth/admin/detail/'+row.user_id">
+          <router-link :to="'/auth/admin/edit/'+row.user_id">
             <el-button type="primary" size="small" icon="el-icon-edit">
               编辑
             </el-button>

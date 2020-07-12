@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/astaxie/beego/validation"
 	"strconv"
 	"strings"
@@ -69,6 +70,7 @@ type MenuData struct {
 	Redirect  string      `json:"redirect"`           //重定向
 	Name      string      `json:"name"`               //唯一标识
 	Meta      Meta        `json:"meta,omitempty"`     //meta信息
+	Hidden    int8        `json:"hidden"`             //是否显示
 	Component string      `json:"component"`          //view地址
 	Child     []*MenuData `json:"children,omitempty"` //子节点
 }
@@ -80,6 +82,12 @@ type RouteOperation struct {
 
 func (data *RouteDetail) Valid(v *validation.Validation) {
 	var chineseErr = "禁止输入中文字符"
+	if data.Route != "" {
+		if common.HasChineseChar(data.Route) {
+			v.SetError("route", chineseErr)
+			return
+		}
+	}
 	if data.Path != "" {
 		if common.HasChineseChar(data.Path) {
 			v.SetError("path", chineseErr)
@@ -167,7 +175,7 @@ func RouteAll() []*RouteDetail {
 	return routeList
 }
 
-func MenuList(adminId int) (error, *Menu) {
+func MenuList(adminId int) (*Menu, error) {
 	var (
 		filters []interface{}
 		fields  []string
@@ -180,9 +188,9 @@ func MenuList(adminId int) (error, *Menu) {
 		"hidden", "icon", "extra", "component"}
 	list, _ := models.GetRoutesList(0, 0, filters, fields, orderBy)
 
-	routeList, err := GetUserRouteById(adminId)
-	if err != nil {
-		return err, nil
+	routeList := GetUserRouteById(adminId)
+	if len(routeList) == 0 {
+		return nil, errors.New("获取用户权限失败")
 	}
 
 	var menuData []*MenuData
@@ -190,10 +198,17 @@ func MenuList(adminId int) (error, *Menu) {
 		if !common.InArray(v.Id, routeList[:]) {
 			continue
 		}
+		path := v.Path
+		if v.ParentId == 0 {
+			path = "/" + path
+		}
+		if v.Extra != "" {
+			path += "/" + v.Extra
+		}
 		arr := &MenuData{
 			Id:        v.Id,
 			ParentId:  v.ParentId,
-			Path:      v.Path + v.Extra,
+			Path:      path,
 			Component: v.Component,
 			Redirect:  v.Redirect,
 			Name:      v.Name,
@@ -201,7 +216,8 @@ func MenuList(adminId int) (error, *Menu) {
 				Title: v.RouteName,
 				Icon:  v.Icon,
 			},
-			Child: nil,
+			Hidden: v.Hidden,
+			Child:  nil,
 		}
 		menuData = append(menuData, arr)
 	}
@@ -210,8 +226,7 @@ func MenuList(adminId int) (error, *Menu) {
 	data := &Menu{
 		List: arr,
 	}
-	data.List = arr
-	return nil, data
+	return data, nil
 }
 
 func RouteDetailById(routeId int) (*RouteDetail, error) {
@@ -360,7 +375,7 @@ func SetRouteSort(routeId int, sort int16) error {
 }
 
 //根据用户id获取路由信息
-func GetUserRouteById(userId int) ([]interface{}, error) {
+func GetUserRouteById(userId int) []interface{} {
 	data := GetAdminLoginData(userId)
 	arr := strings.Split(data.RouteIds, ",")
 	routeList := make([]interface{}, len(arr))
@@ -369,5 +384,5 @@ func GetUserRouteById(userId int) ([]interface{}, error) {
 		routeList[k] = id
 	}
 
-	return routeList, nil
+	return routeList
 }

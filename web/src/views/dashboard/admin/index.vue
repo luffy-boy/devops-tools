@@ -78,22 +78,22 @@ export default {
         if (response.code != 1) {
           return;
         }
-        //ÓÃ»§×ÜÊı
+        //ç”¨æˆ·æ€»æ•°
         lineChartData.userCount.actualData = response.data.user_count.actual_data;
         lineChartData.userCount.dateData = response.data.user_count.date_data;
         this.user_count = response.data.user_count.total;
 
-        //´ıÉóºËÈÎÎñ
+        //å¾…å®¡æ ¸ä»»åŠ¡
         lineChartData.auditTask.actualData = response.data.audit_task.actual_data;
         lineChartData.auditTask.dateData = response.data.audit_task.date_data;
         this.audit_task = response.data.audit_task.total;
 
-        //³É¹¦ÈÎÎñ
+        //æˆåŠŸä»»åŠ¡
         lineChartData.successTask.actualData = response.data.success_task.actual_data;
         lineChartData.successTask.dateData = response.data.success_task.date_data;
         this.success_task = response.data.success_task.total;
 
-        //Ê§°ÜÈÎÎñ
+        //å¤±è´¥ä»»åŠ¡
         lineChartData.failTask.actualData = response.data.fail_task.actual_data;
         lineChartData.failTask.dateData = response.data.fail_task.date_data;
         this.fail_task = response.data.fail_task.total;

@@ -88,7 +88,7 @@ const authRouter = {
           path: 'list',
           component: () => import('@/views/auth/route/list'),
           name: 'RouteList',
-          meta: { title: '路由管理'},
+          meta: { title: '路由列表'},
         },
         {
           path: 'detail',

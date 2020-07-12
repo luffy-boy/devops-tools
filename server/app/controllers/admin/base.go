@@ -23,7 +23,11 @@ type BaseController struct {
 }
 
 //过滤不校验的Token的路由
-var skipRouter = []string{"auth/admin/login", "auth/admin/logout"}
+var skipRouter = []string{
+	"auth/admin/login",
+	"auth/admin/logout",
+	"auth/admin/refresh_login",
+}
 
 func (c *BaseController) Prepare() {
 	c.ENV = beego.AppConfig.String("runmode")
@@ -48,25 +52,27 @@ func (c *BaseController) CheckLogin() {
 		routes  = strings.Trim(strings.ToLower(c.Ctx.Request.URL.Path), "/")
 		request = strings.ToUpper(c.Ctx.Request.Method)
 		routeId int
+		admin   *util.AdminJwtData
+		err     error
 	)
 
 	arr := make([]interface{}, len(skipRouter))
 	for k, v := range skipRouter {
 		arr[k] = v
 	}
-	if !common.InArray(routes, arr[:]) {
-		token := c.Ctx.Request.Header.Get("Token")
-		if token == "" {
-			c.ResponseToJson(response.TokenMessingErr, nil)
-			return
-		}
+	admin = &util.AdminJwtData{}
+	token := c.Ctx.Request.Header.Get("Token")
+	if token != "" {
 		//校验token
-		admin, err := util.ValidateToken(token)
+		admin, err = util.ValidateToken(token)
 		if err != nil || admin == nil {
 			c.ResponseToJson(response.TokenInvalidErr, nil)
 			return
 		}
+		c.userId = admin.Id
+	}
 
+	if !common.InArray(routes, arr[:]) {
 		if admin.Id < 1 {
 			c.ResponseToJson(response.TokenInvalidErr, nil)
 			return
@@ -85,8 +91,6 @@ func (c *BaseController) CheckLogin() {
 			util.RefreshToken(token, tokenExpired)
 			util.RedisObj.Expire(userKey, tokenExpired)
 		}
-
-		c.userId = admin.Id
 
 		if admin.Id == 1 {
 			return
@@ -116,8 +120,8 @@ func (c *BaseController) CheckLogin() {
 			return
 		}
 
-		routeList, err := service.GetUserRouteById(admin.Id)
-		if err != nil {
+		routeList := service.GetUserRouteById(admin.Id)
+		if len(routeList) == 0 {
 			c.ResponseToJson(response.UserAccessForbiddenErr, nil)
 			return
 		}

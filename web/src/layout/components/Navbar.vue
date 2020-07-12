@@ -24,12 +24,15 @@
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
-          <router-link to="/profile/index">
+          <!-- <router-link to="/profile/index">
             <el-dropdown-item>Profile</el-dropdown-item>
-          </router-link>
+          </router-link> -->
           <router-link to="/">
             <el-dropdown-item>首页</el-dropdown-item>
           </router-link>
+          <el-dropdown-item divided @click.native="refreshLoginInfo">
+            <span style="display:block;">刷新权限</span>
+          </el-dropdown-item>
           <el-dropdown-item divided @click.native="logout">
             <span style="display:block;">登出</span>
           </el-dropdown-item>
@@ -47,6 +50,10 @@ import ErrorLog from '@/components/ErrorLog'
 import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
+import { refreshLoginInfo } from '@/api/admin'
+import { removeMenu } from '@/utils/auth'
+import { getAuthMenu } from '@/api/route'
+import { setMenu } from '@/utils/auth'
 
 export default {
   components: {
@@ -71,6 +78,26 @@ export default {
     async logout() {
       await this.$store.dispatch('admin/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+    },
+    async refreshLoginInfo() {
+      refreshLoginInfo().then(response => {
+        this.$message({
+          message: response.message,
+          type: response.code === 1 ? 'success' : 'error',
+        });
+        if ( response.code === 1 ) {
+          removeMenu()
+          getAuthMenu().then(response => {
+            if (response.code === 1) {
+              const data = response.data.list
+              setMenu(data)
+              this.$router.go(0)
+            }
+          }).catch(error => {
+            console.log(error)
+          })
+        }
+      })
     }
   }
 }

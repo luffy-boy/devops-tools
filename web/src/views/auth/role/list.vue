@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <router-link :to="'/auth/role/detail'">
+      <router-link :to="'/auth/role/add'">
         <el-button class="filter-item" type="primary">新增角色</el-button>
       </router-link>
     </div>
@@ -31,7 +31,7 @@
             <router-link :to="'/auth/role/route_edit/'+row.role_id">
               <el-button type="warning" icon="el-icon-star-off" size="small">权限配置</el-button>
             </router-link>
-            <router-link :to="'/auth/role/detail/'+row.role_id">
+            <router-link :to="'/auth/role/edit/'+row.role_id">
               <el-button type="primary" icon="el-icon-edit" size="small">编辑</el-button>
             </router-link>
             <el-button

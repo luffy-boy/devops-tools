@@ -9,3 +9,4 @@
 /server/swagger/*
 /server/swagger.zip
 /server/server.exe*
+/server/routers/commentsRouter_app_controllers_admin.go

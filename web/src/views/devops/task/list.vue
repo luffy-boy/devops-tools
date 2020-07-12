@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <router-link :to="'/devops/task/detail'">
+      <router-link :to="'/devops/task/add'">
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit">
         新增
       </el-button>
@@ -79,7 +79,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="400" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <router-link :to="'/devops/task/detail/'+row.task_id">
+          <router-link :to="'/devops/task/edit/'+row.task_id">
             <el-button type="primary" size="small" icon="el-icon-edit">
               查看
             </el-button>

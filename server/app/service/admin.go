@@ -83,6 +83,7 @@ type AdminLoginData struct {
 	Sex          int8   `json:"sex"`          //性別
 	Token        string `json:"token"`        //秘钥
 	Introduction string `json:"introduction"` //描述
+	Menu         *Menu  `json:"menu"`         // 菜单
 }
 
 type AdminListData struct {
@@ -188,7 +189,7 @@ func AdminLogin(params *AdminRequest) (*AdminLoginData, int, error) {
 	}
 
 	//组装路由id集合
-	RoleData := getRoleCacheInfoById(admin.RoleId)
+	RoleData := getRoleCacheInfoById(admin.RoleId, admin.Id)
 	routeIds += RoleData.RoutesIds
 	role := RoleData.Role
 	if admin.RouteIds != "" {
@@ -197,6 +198,11 @@ func AdminLogin(params *AdminRequest) (*AdminLoginData, int, error) {
 	routeIds = strings.Trim(routeIds, ",")
 	admin.RouteIds = routeIds
 	SetAdminLoginData(admin, role) //设置登录缓存信息
+
+	//设置菜单
+	if menu, err1 := MenuList(admin.Id); err1 == nil {
+		LoginData.Menu = menu
+	}
 	return LoginData, 1, nil
 }
 
@@ -241,7 +247,7 @@ func AdminReLogin(userId int, ip string, token string) (*AdminLoginData, int, er
 		return nil, response.DbReadErr, err
 	}
 
-	RoleData := getRoleCacheInfoById(admin.RoleId)
+	RoleData := getRoleCacheInfoById(admin.RoleId, admin.Id)
 
 	routeIds += RoleData.RoutesIds
 	role := RoleData.Role
@@ -252,6 +258,42 @@ func AdminReLogin(userId int, ip string, token string) (*AdminLoginData, int, er
 	admin.RouteIds = routeIds
 	SetAdminLoginData(admin, role) //设置登录缓存信息
 	return LoginData, 1, nil
+}
+
+//刷新登陆信息
+func RefreshLogin(userId int) error {
+	var (
+		filters  []interface{}
+		routeIds string
+	)
+
+	userKey := util.RedisKeyList[util.CmsUserLoginKey] + strconv.Itoa(userId)
+	if !util.RedisObj.Exists(userKey) {
+		return errors.New("管理员登陆状态异常")
+	}
+	filters = append(filters, "id", userId)
+	filters = append(filters, "is_delete", 0)
+	admin, err := models.GetDetail([]string{"id", "username", "password", "real_name", "salt", "status", "sex", "role_id", "route_ids"}, filters)
+	if err != nil {
+		return err
+	}
+	if admin.Id == 0 {
+		return errors.New("用户不存在")
+	}
+	if admin.Status != 1 {
+		return errors.New("状态错误")
+	}
+	//组装路由id集合
+	RoleData := getRoleCacheInfoById(admin.RoleId, userId)
+	routeIds += RoleData.RoutesIds
+	role := RoleData.Role
+	if admin.RouteIds != "" {
+		routeIds += "," + admin.RouteIds
+	}
+	routeIds = strings.Trim(routeIds, ",")
+	admin.RouteIds = routeIds
+	SetAdminLoginData(admin, role) //设置登录缓存信息
+	return nil
 }
 
 //查询管理员列表
@@ -537,7 +579,7 @@ func countUser(timestamp int64) (error, DataCount) {
 	}
 
 	for i := 6; i >= 0; i-- {
-		ntime = timestamp - int64(i * 86400)
+		ntime = timestamp - int64(i*86400)
 		ndate = time.Unix(ntime, 0).Format("01-02")
 
 		dateData = append(dateData, ndate)
@@ -592,7 +634,7 @@ func countAuditTask(timestamp int64) (error, DataCount) {
 	}
 
 	for i := 6; i >= 0; i-- {
-		ntime = timestamp - int64(i * 86400)
+		ntime = timestamp - int64(i*86400)
 		ndate = time.Unix(ntime, 0).Format("01-02")
 
 		dateData = append(dateData, ndate)
@@ -665,7 +707,7 @@ func countTaskStatus(timestamp int64, status int8) (error, DataCount) {
 	}
 
 	for i := 6; i >= 0; i-- {
-		ntime = timestamp - int64(i * 86400)
+		ntime = timestamp - int64(i*86400)
 		ndate = time.Unix(ntime, 0).Format("01-02")
 
 		dateData = append(dateData, ndate)

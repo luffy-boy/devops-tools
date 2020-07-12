@@ -47,3 +47,10 @@ export function editSort(data){
     data
   })
 }
+
+export function getAuthMenu() {
+  return request({
+    url: 'auth/route/menu',
+    method: 'get'
+  })
+}

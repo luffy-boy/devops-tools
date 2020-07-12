@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <router-link :to="'/devops/servers/detail'">
+      <router-link :to="'/devops/servers/add'">
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit">
         新增
       </el-button>
@@ -49,7 +49,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <router-link :to="'/devops/servers/detail/'+row.server_id">
+          <router-link :to="'/devops/servers/edit/'+row.server_id">
             <el-button type="primary" size="small" icon="el-icon-edit">
               编辑
             </el-button>

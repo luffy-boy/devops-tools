@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 	"tools/server/app/models"
 	"tools/server/app/response"
 )
@@ -264,10 +266,27 @@ func RouteEdit(routeParams *RouteEditParams) int {
 }
 
 //获取角色组 路由id
-func getRoleCacheInfoById(roleId int) (RoleData *RoleCache) {
+func getRoleCacheInfoById(roleId, adminId int) (RoleData *RoleCache) {
 	var (
 		ok bool
 	)
+	if adminId == 1 {
+		list, _ := GetRouteData()
+		routesIds := ""
+		if list != nil {
+			for k, _ := range list {
+				routesIds += strconv.Itoa(k) + ","
+			}
+			routesIds = strings.TrimRight(routesIds, ",")
+		}
+		return &RoleCache{
+			Id:        0,
+			Role:      "Administrators",
+			RoleName:  "超级管理员",
+			ParentId:  0,
+			RoutesIds: routesIds,
+		}
+	}
 	//组装路由id集合
 	roleList, err := getRoleData()
 	if err != nil {
