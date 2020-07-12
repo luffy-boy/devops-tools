@@ -92,7 +92,7 @@ export default {
         lineChartData.successTask.actualData = response.data.success_task.actual_data;
         lineChartData.successTask.dateData = response.data.success_task.date_data;
         this.success_task = response.data.success_task.total;
-
+        
         //失败任务
         lineChartData.failTask.actualData = response.data.fail_task.actual_data;
         lineChartData.failTask.dateData = response.data.fail_task.date_data;

@@ -709,7 +709,6 @@ func countTaskStatus(timestamp int64, status int8) (error, DataCount) {
 	for i := 6; i >= 0; i-- {
 		ntime = timestamp - int64(i*86400)
 		ndate = time.Unix(ntime, 0).Format("01-02")
-
 		dateData = append(dateData, ndate)
 		if _, ok := dateKey[ndate]; ok {
 			actualData = append(actualData, dateKey[ndate])
